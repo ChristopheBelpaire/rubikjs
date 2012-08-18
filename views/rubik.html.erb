@@ -10,7 +10,7 @@
             var matrix = new THREE.Matrix4();
         //m.makeRotationY(0.1);
         //matrix.makeRotationX(0.01); 
-        matrix.setRotationFromEuler(new THREE.Vector3(0.02,0.01,0.01))
+       // matrix.setRotationFromEuler(new THREE.Vector3(0.02,0.01,0.01))
         //matrix.makeRotationY(0.01); 
         //matrix.multiplySelf(matrix.makeRotationX(0.01)); 
 
@@ -235,7 +235,7 @@
     }
 
     function render() {
-       cube.applyMatrix(matrix);
+   //    cube.applyMatrix(matrix);
        renderer.render( scene, camera );
     }
 </script>
