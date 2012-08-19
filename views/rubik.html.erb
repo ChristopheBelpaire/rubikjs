@@ -10,7 +10,7 @@
             var matrix = new THREE.Matrix4();
         //m.makeRotationY(0.1);
         //matrix.makeRotationX(0.01); 
-       // matrix.setRotationFromEuler(new THREE.Vector3(0.02,0.01,0.01))
+        matrix.setRotationFromEuler(new THREE.Vector3(0,0.01,0))
         //matrix.makeRotationY(0.01); 
         //matrix.multiplySelf(matrix.makeRotationX(0.01)); 
 
@@ -73,7 +73,9 @@
       this.matrix = new THREE.Matrix4();
       this.matrix.setRotationFromEuler(orientation);
       this.matrix.setPosition(position);
+      
       this.load_mesh(type, Cubie.BLACK);  
+      
       if (color_front != undefined){
           this.load_mesh(Cubie.STICKER, color_front, new THREE.Vector3(0,0,0), post_rotation_matrix);
       }
@@ -83,18 +85,18 @@
       if (color_side != undefined){
         this.load_mesh(Cubie.STICKER, color_side, new THREE.Vector3(0, Math.PI/2,0), post_rotation_matrix);
       }
-
       cube.objects.add(this.all_meshes);
-     
+       
     };
 
     function Cube(scene,size){
       this.objects = new THREE.Object3D();
-
+      this.scene = scene;
       this.init_center = function (orientation, color){
-        center_x = -max_position +2;
-        center_y = -max_position +2;
-        center_z = max_position;
+
+        center_x = -this.max_position +2;
+        center_y = -this.max_position +2;
+        center_z = this.max_position;
         i=this.cubies.length;
 
         post_rotation_matrix = new THREE.Matrix4();
@@ -106,14 +108,14 @@
             center_x+=2;
           }
           center_y+=2;
-          center_x= -max_position +2;
+          center_x= -this.max_position +2;
         }        
       }
 
       this.init_border = function (orientation, color_front, color_up){
-        center_x = -max_position +2;
-        center_y = max_position;
-        center_z = max_position;
+        center_x = -this.max_position +2;
+        center_y = this.max_position;
+        center_z = this.max_position;
         i=this.cubies.length;
 
         post_rotation_matrix = new THREE.Matrix4();
@@ -124,39 +126,78 @@
           center_x+=2;
         }
       }
+
+      this.getLayer= function(axis, position){
+         coordinate_position = -this.max_position + position*2;
+         var layer = new Array();
+         //scene.updateMatrix();
+
+         for (i=0; i < this.cubies.length; i++){
+            this.cubies[i].all_meshes.updateMatrix();
+            p = this.cubies[i].all_meshes.matrix.getPosition();
+            if(eval('p.'+axis) == coordinate_position) { layer.push(this.cubies[i]);}
+         }
+         return layer; 
+      } 
+
+      this.rotateLayer = function(axis,position, angle){
+        var m = new THREE.Matrix4();
+        switch(axis){
+          case 'x':
+            m.setRotationFromEuler(new THREE.Vector3(angle,0,0));
+            break;
+          case 'y':
+            m.setRotationFromEuler(new THREE.Vector3(0,angle,0));
+            break;          
+          case 'z':
+            m.setRotationFromEuler(new THREE.Vector3(0,0,angle));
+            break;          
+        };    
+    //    coordinate_position = -this.max_position + position*2;
+    //    for (i=0; i < this.cubies.length; i++){
+    //      p = this.cubies[i].all_meshes.matrix.getPosition();
+    //      if(eval('p.'+axis) == coordinate_position) { this.cubies[i].all_meshes.applyMatrix(m);}
+     //   }
+
+        layer = this.getLayer(axis, position);
+        for (i=0; i < layer.length; i++){
+          layer[i].all_meshes.applyMatrix(m);
+        }
+      }
+
       this.size = size;
       this.mesh = 
       this.cubies = new Array();
 
 
       this.half_width = Math.floor(size/2); 
-      max_position = this.half_width*2 - (1- size%2);
+      this.max_position = this.half_width*2 - (1- size%2);
       //front upper left
-      position = new THREE.Vector3(-max_position , max_position, max_position)  
+      position = new THREE.Vector3(-this.max_position , this.max_position, this.max_position)  
       this.cubies[0] = new Cubie(this, Cubie.CORNER, new THREE.Vector3(0,0,Math.PI / 2),position, Cubie.RED, Cubie.YELLOW,Cubie.GREEN);
       //front upper right
-      position = new THREE.Vector3(max_position , max_position, max_position)  
+      position = new THREE.Vector3(this.max_position , this.max_position, this.max_position)  
       this.cubies[1] = new Cubie(this, Cubie.CORNER,new THREE.Vector3(0,0,0),position, Cubie.RED, Cubie.GREEN, Cubie.WHITE);
       //front bottom left
-      position = new THREE.Vector3(-max_position , -max_position, max_position)  
+      position = new THREE.Vector3(-this.max_position , -this.max_position, this.max_position)  
       this.cubies[2] = new Cubie(this, Cubie.CORNER,new THREE.Vector3(0,0,-Math.PI), position, Cubie.RED, Cubie.BLUE,Cubie.YELLOW);
       //front bottom right
-      position = new THREE.Vector3(max_position , -max_position, max_position)  
+      position = new THREE.Vector3(this.max_position , -this.max_position, this.max_position)  
       this.cubies[3]= new Cubie(this, Cubie.CORNER,new THREE.Vector3(0,0,-Math.PI /2), position, Cubie.RED, Cubie.WHITE, Cubie.BLUE);
 
       //back upper left
-      position = new THREE.Vector3(-max_position , max_position, -max_position)  
+      position = new THREE.Vector3(-this.max_position , this.max_position, -this.max_position)  
       this.cubies[4] = new Cubie(this, Cubie.CORNER, new THREE.Vector3(Math.PI,0,Math.PI),position, Cubie.ORANGE, Cubie.GREEN,Cubie.YELLOW);
       //back upper right
-      position = new THREE.Vector3(max_position , max_position, -max_position)  
+      position = new THREE.Vector3(this.max_position , this.max_position, -this.max_position)  
       this.cubies[5] = new Cubie(this, Cubie.CORNER,new THREE.Vector3(Math.PI,0,-Math.PI/2),position, Cubie.ORANGE, Cubie.WHITE, Cubie.GREEN);
    
       //back bottom left
-      position = new THREE.Vector3(-max_position , -max_position, -max_position)  
+      position = new THREE.Vector3(-this.max_position , -this.max_position, -this.max_position)  
       this.cubies[6] = new Cubie(this, Cubie.CORNER,new THREE.Vector3(Math.PI,0,-3/2 *Math.PI), position, Cubie.ORANGE, Cubie.YELLOW, Cubie.BLUE);
    
       //back bottom right
-      position = new THREE.Vector3(max_position , -max_position, -max_position)  
+      position = new THREE.Vector3(this.max_position , -this.max_position, -this.max_position)  
       this.cubies[7]= new Cubie(this, Cubie.CORNER,new THREE.Vector3(Math.PI,0, 0 ), position, Cubie.ORANGE, Cubie.BLUE, Cubie.WHITE);
 
       this.init_center(new THREE.Vector3(0,0,0),Cubie.RED);
@@ -235,7 +276,11 @@
     }
 
     function render() {
-   //    cube.applyMatrix(matrix);
+       //cube.applyMatrix(matrix);
+       //cube.rotateLayer('y',1,0.01)
+       // cube.rotateLayer('y',0,0.01)
+
+       scene.updateMatrix();
        renderer.render( scene, camera );
     }
 </script>
