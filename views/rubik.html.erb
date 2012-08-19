@@ -10,7 +10,7 @@
             var matrix = new THREE.Matrix4();
         //m.makeRotationY(0.1);
         //matrix.makeRotationX(0.01); 
-        matrix.setRotationFromEuler(new THREE.Vector3(0,0.01,0))
+        matrix.setRotationFromEuler(new THREE.Vector3(0.007,0.01,0.02))
         //matrix.makeRotationY(0.01); 
         //matrix.multiplySelf(matrix.makeRotationX(0.01)); 
 
@@ -22,15 +22,11 @@
       this.all_meshes = new THREE.Object3D();
 
       this.prepare_mesh = function(geometry, color, orientation, post_rotation_matrix){
-        mesh = new THREE.Mesh(geometry, Cubie.prototype.materials[color]);
-        mesh_matrix = new THREE.Matrix4();
+        var mesh = new THREE.Mesh(geometry, Cubie.prototype.materials[color]);
+        var mesh_matrix = new THREE.Matrix4();
         if (orientation != undefined){
           mesh_matrix.setRotationFromEuler(orientation);
         }
-        mesh_matrix.multiply(scope.matrix, mesh_matrix);
-        if (post_rotation_matrix != undefined){
-          mesh_matrix.multiply(post_rotation_matrix,mesh_matrix);       
-        }; 
         mesh.applyMatrix(mesh_matrix);
         scope.all_meshes.add(mesh);
       }  
@@ -85,6 +81,11 @@
       if (color_side != undefined){
         this.load_mesh(Cubie.STICKER, color_side, new THREE.Vector3(0, Math.PI/2,0), post_rotation_matrix);
       }
+
+      this.all_meshes.applyMatrix(this.matrix);
+      if (post_rotation_matrix != undefined){
+        this.all_meshes.applyMatrix(post_rotation_matrix);
+      }
       cube.objects.add(this.all_meshes);
        
     };
@@ -130,7 +131,6 @@
       this.getLayer= function(axis, position){
          coordinate_position = -this.max_position + position*2;
          var layer = new Array();
-         //scene.updateMatrix();
 
          for (i=0; i < this.cubies.length; i++){
             this.cubies[i].all_meshes.updateMatrix();
@@ -153,11 +153,6 @@
             m.setRotationFromEuler(new THREE.Vector3(0,0,angle));
             break;          
         };    
-    //    coordinate_position = -this.max_position + position*2;
-    //    for (i=0; i < this.cubies.length; i++){
-    //      p = this.cubies[i].all_meshes.matrix.getPosition();
-    //      if(eval('p.'+axis) == coordinate_position) { this.cubies[i].all_meshes.applyMatrix(m);}
-     //   }
 
         layer = this.getLayer(axis, position);
         for (i=0; i < layer.length; i++){
@@ -199,6 +194,14 @@
       //back bottom right
       position = new THREE.Vector3(this.max_position , -this.max_position, -this.max_position)  
       this.cubies[7]= new Cubie(this, Cubie.CORNER,new THREE.Vector3(Math.PI,0, 0 ), position, Cubie.ORANGE, Cubie.BLUE, Cubie.WHITE);
+
+
+      post_rotation_matrix = new THREE.Matrix4();
+      post_rotation_matrix.setRotationFromEuler(new THREE.Vector3(0,Math.PI/2,0));
+     // position = new THREE.Vector3(-this.max_position +2 , this.max_position -2, this.max_position -2)  
+     // post_rotation_matrix.setPosition(position);
+
+   //   this.cubies[8] =new Cubie(this, Cubie.SIDE, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,2), Cubie.RED, null, null,post_rotation_matrix);
 
       this.init_center(new THREE.Vector3(0,0,0),Cubie.RED);
       this.init_center(new THREE.Vector3(Math.PI/2,0,0),Cubie.BLUE);
@@ -259,7 +262,12 @@
 
         cube = new Cube(scene,3);
         scene.add(cube.objects);
- 
+
+      //  post_rotation_matrix = new THREE.Matrix4();
+      //  post_rotation_matrix.setRotationFromEuler(new THREE.Vector3(0,0,0));
+      //  c1 = new Cubie(cube, Cubie.SIDE, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,3), Cubie.RED, null, null, post_rotation_matrix);
+      //  scene.add(c1.all_meshes);
+
         renderer = new THREE.WebGLRenderer();
         renderer.setSize( window.innerWidth, window.innerHeight );
 
@@ -276,7 +284,8 @@
     }
 
     function render() {
-       //cube.applyMatrix(matrix);
+      // c1.applyMatrix(matrix);
+       cube.applyMatrix(matrix);
        //cube.rotateLayer('y',1,0.01)
        // cube.rotateLayer('y',0,0.01)
 
