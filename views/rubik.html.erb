@@ -10,7 +10,7 @@
             var matrix = new THREE.Matrix4();
         //m.makeRotationY(0.1);
         //matrix.makeRotationX(0.01); 
-        matrix.setRotationFromEuler(new THREE.Vector3(0.007,0.01,0.02))
+        matrix.setRotationFromEuler(new THREE.Vector3(0.01,0.01,0.01))
         //matrix.makeRotationY(0.01); 
         //matrix.multiplySelf(matrix.makeRotationX(0.01)); 
 
@@ -133,9 +133,9 @@
          var layer = new Array();
 
          for (i=0; i < this.cubies.length; i++){
-            this.cubies[i].all_meshes.updateMatrix();
+           // this.cubies[i].all_meshes.updateMatrix();
             p = this.cubies[i].all_meshes.matrix.getPosition();
-            if(eval('p.'+axis) == coordinate_position) { layer.push(this.cubies[i]);}
+            if(Math.round(eval('p.'+axis)) == coordinate_position) { layer.push(this.cubies[i]);}
          }
          return layer; 
       } 
@@ -167,6 +167,7 @@
 
       this.half_width = Math.floor(size/2); 
       this.max_position = this.half_width*2 - (1- size%2);
+  
       //front upper left
       position = new THREE.Vector3(-this.max_position , this.max_position, this.max_position)  
       this.cubies[0] = new Cubie(this, Cubie.CORNER, new THREE.Vector3(0,0,Math.PI / 2),position, Cubie.RED, Cubie.YELLOW,Cubie.GREEN);
@@ -194,14 +195,6 @@
       //back bottom right
       position = new THREE.Vector3(this.max_position , -this.max_position, -this.max_position)  
       this.cubies[7]= new Cubie(this, Cubie.CORNER,new THREE.Vector3(Math.PI,0, 0 ), position, Cubie.ORANGE, Cubie.BLUE, Cubie.WHITE);
-
-
-      post_rotation_matrix = new THREE.Matrix4();
-      post_rotation_matrix.setRotationFromEuler(new THREE.Vector3(0,Math.PI/2,0));
-     // position = new THREE.Vector3(-this.max_position +2 , this.max_position -2, this.max_position -2)  
-     // post_rotation_matrix.setPosition(position);
-
-   //   this.cubies[8] =new Cubie(this, Cubie.SIDE, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,2), Cubie.RED, null, null,post_rotation_matrix);
 
       this.init_center(new THREE.Vector3(0,0,0),Cubie.RED);
       this.init_center(new THREE.Vector3(Math.PI/2,0,0),Cubie.BLUE);
