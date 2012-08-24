@@ -319,10 +319,13 @@
 
         if ( intersects.length > 0 ) {
             console.log("---")
+            o = intersects[0].object.parent.matrix.getPosition();
             var r = intersects[0].object.matrixWorld.clone()
             r.setPosition(new THREE.Vector3(0,0,0));  
             var n=  r.multiplyVector3(new THREE.Vector3(0,0,1))
             console.log("normal: "+Math.round(n.x)+","+Math.round(n.y)+','+Math.round(n.z));
+            console.log("position: "+Math.round(o.x)+","+Math.round(o.y)+','+Math.round(o.z));
+
             //intersects[ 0 ].object.material.color.setHex( Math.random() * 0xffffff );
         }
 
