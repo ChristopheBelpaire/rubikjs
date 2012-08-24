@@ -1,5 +1,6 @@
 <script src="/javascripts/three.js/build/Three.js"></script>
-<body>
+
+<body style ='margin:0;'>
 
 </body>    
 
@@ -10,7 +11,7 @@
             var matrix = new THREE.Matrix4();
         //m.makeRotationY(0.1);
         //matrix.makeRotationX(0.01); 
-        matrix.setRotationFromEuler(new THREE.Vector3(0.01,0.01,0.01))
+        matrix.setRotationFromEuler(new THREE.Vector3(0.0,0.01,0.0))
         //matrix.makeRotationY(0.01); 
         //matrix.multiplySelf(matrix.makeRotationX(0.01)); 
 
@@ -18,28 +19,33 @@
     init();
     animate();
  
-    function Cubie(cube, type, orientation, position, color_front, color_up, color_side, post_rotation_matrix){
+    function Cubie(cube, type, orientation, position, color_front, color_up, color_side, post_rotation_matrix, meshes_array){
       this.all_meshes = new THREE.Object3D();
 
-      this.prepare_mesh = function(geometry, color, orientation, post_rotation_matrix){
-        var mesh = new THREE.Mesh(geometry, Cubie.prototype.materials[color]);
+      this.prepare_mesh = function(geometry, color, orientation, meshes_array){
+        var mesh = new THREE.Mesh(geometry, Cubie.prototype.materials[color].clone());
         var mesh_matrix = new THREE.Matrix4();
         if (orientation != undefined){
           mesh_matrix.setRotationFromEuler(orientation);
         }
         mesh.applyMatrix(mesh_matrix);
         scope.all_meshes.add(mesh);
+        if (meshes_array != undefined){
+          meshes_array.push(mesh);
+        }
+        mesh.cubie = this;
+        mesh.color = color;
       }  
 
-      this.load_mesh = function (type, color, orientation, post_orientation_matrix ){
+      this.load_mesh = function (type, color, orientation, meshes_array ){
         if (Cubie.prototype.mesh_files[type] == undefined) {
             loader.load(Cubie.prototype.mesh_filenames[type], function(geometry){
             Cubie.prototype.mesh_files[type] = geometry;
-            scope.prepare_mesh(geometry, color, orientation, post_rotation_matrix);
+            scope.prepare_mesh(geometry, color, orientation, meshes_array);
           });
         }
        else{
-         scope.prepare_mesh(geometry, color, orientation, post_rotation_matrix);
+         scope.prepare_mesh(geometry, color, orientation, meshes_array);
        }   
       }
 
@@ -61,7 +67,7 @@
                                      new THREE.MeshBasicMaterial( { color: 0x0000ff, overdraw: true}),
                                      new THREE.MeshBasicMaterial( { color: 0xffff00, overdraw: true}),
                                      new THREE.MeshBasicMaterial( { color: 0xffa500, overdraw: true})]
-        Cubie.prototype.mesh_filenames = ['rubik_corner.js','rubik_edge.js','rubik_side.js','sticker.js'];
+        Cubie.prototype.mesh_filenames = ['rubik_corner.js','rubik_edge.js','rubik_side.js','sticker2.js'];
         Cubie.prototype.initialized = true;
       }; 
 
@@ -73,13 +79,13 @@
       this.load_mesh(type, Cubie.BLACK);  
       
       if (color_front != undefined){
-          this.load_mesh(Cubie.STICKER, color_front, new THREE.Vector3(0,0,0), post_rotation_matrix);
+          this.load_mesh(Cubie.STICKER, color_front, new THREE.Vector3(0,0,0), cube.cubies_meshes);
       }
       if (color_up != undefined){
-        this.load_mesh(Cubie.STICKER, color_up, new THREE.Vector3(-Math.PI/2,0,0), post_rotation_matrix);
+        this.load_mesh(Cubie.STICKER, color_up, new THREE.Vector3(-Math.PI/2,0,0), cube.cubies_meshes);
       }
       if (color_side != undefined){
-        this.load_mesh(Cubie.STICKER, color_side, new THREE.Vector3(0, Math.PI/2,0), post_rotation_matrix);
+        this.load_mesh(Cubie.STICKER, color_side, new THREE.Vector3(0, Math.PI/2,0), cube.cubies_meshes);
       }
 
       this.all_meshes.applyMatrix(this.matrix);
@@ -87,10 +93,10 @@
         this.all_meshes.applyMatrix(post_rotation_matrix);
       }
       cube.objects.add(this.all_meshes);
-       
     };
 
     function Cube(scene,size){
+      this.cubies_meshes = [];
       this.objects = new THREE.Object3D();
       this.scene = scene;
       this.init_center = function (orientation, color){
@@ -133,7 +139,6 @@
          var layer = new Array();
 
          for (i=0; i < this.cubies.length; i++){
-           // this.cubies[i].all_meshes.updateMatrix();
             p = this.cubies[i].all_meshes.matrix.getPosition();
             if(Math.round(eval('p.'+axis)) == coordinate_position) { layer.push(this.cubies[i]);}
          }
@@ -212,11 +217,11 @@
       this.init_border(new THREE.Vector3(0,-Math.PI/2,0),Cubie.YELLOW, Cubie.GREEN);
       this.init_border(new THREE.Vector3(0,Math.PI/2,0),Cubie.WHITE, Cubie.GREEN);
 
-      this.init_border(new THREE.Vector3(Math.PI/2,-Math.PI/2,0),Cubie.YELLOW, Cubie.RED);
-      this.init_border(new THREE.Vector3(Math.PI/2,Math.PI/2,0),Cubie.WHITE, Cubie.RED);
+      this.init_border(new THREE.Vector3(0,0,Math.PI/2),Cubie.RED, Cubie.YELLOW);
+      this.init_border(new THREE.Vector3(0,0,-Math.PI/2),Cubie.RED, Cubie.WHITE);
 
-      this.init_border(new THREE.Vector3(-Math.PI/2,-Math.PI/2,0),Cubie.YELLOW, Cubie.ORANGE);
-      this.init_border(new THREE.Vector3(-Math.PI/2,Math.PI/2,0),Cubie.WHITE, Cubie.ORANGE);
+      this.init_border(new THREE.Vector3(0,Math.PI,Math.PI/2),Cubie.ORANGE, Cubie.WHITE);
+      this.init_border(new THREE.Vector3(0,Math.PI,-Math.PI/2),Cubie.ORANGE, Cubie.YELLOW);
 
       this.init_border(new THREE.Vector3(Math.PI,-Math.PI/2,0),Cubie.YELLOW, Cubie.BLUE);
       this.init_border(new THREE.Vector3(Math.PI,Math.PI/2,0),Cubie.WHITE, Cubie.BLUE);
@@ -246,25 +251,30 @@
 
         scene = new THREE.Scene();
 
-        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+        camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 10000 );
+
+    //    camera.matrix.setPosition(new THREE.Vector3(0,0,5));
+        camera.position.x = 10;
+        camera.position.y = 10;
         camera.position.z = 10;
-        //camera.position.x = 10;
-        //camera.position.y = 10;
-        
+
+
+        camera.lookAt(new THREE.Vector3(0,0,0))
+
         scene.add( camera );
 
         cube = new Cube(scene,3);
-        scene.add(cube.objects);
 
-      //  post_rotation_matrix = new THREE.Matrix4();
-      //  post_rotation_matrix.setRotationFromEuler(new THREE.Vector3(0,0,0));
-      //  c1 = new Cubie(cube, Cubie.SIDE, new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,3), Cubie.RED, null, null, post_rotation_matrix);
-      //  scene.add(c1.all_meshes);
+        scene.add(cube.objects);
+        projector = new THREE.Projector();
 
         renderer = new THREE.WebGLRenderer();
         renderer.setSize( window.innerWidth, window.innerHeight );
 
         document.body.appendChild( renderer.domElement );
+        document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+        window.addEventListener( 'resize', onWindowResize, false );
+
 
     }
 
@@ -277,12 +287,48 @@
     }
 
     function render() {
-      // c1.applyMatrix(matrix);
-       cube.applyMatrix(matrix);
+     //  cube.applyMatrix(matrix);
        //cube.rotateLayer('y',1,0.01)
        // cube.rotateLayer('y',0,0.01)
 
        scene.updateMatrix();
        renderer.render( scene, camera );
     }
+
+
+    function onWindowResize() {
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
+    }
+
+    function onDocumentMouseDown( event ) {
+
+        event.preventDefault();
+
+        var vector = new THREE.Vector3( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1, 0.5 );
+
+        projector.unprojectVector( vector, camera );
+
+        var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+
+        var intersects = ray.intersectObjects(cube.cubies_meshes);
+
+        if ( intersects.length > 0 ) {
+            console.log("---")
+            var r = intersects[0].object.matrixWorld.clone()
+            r.setPosition(new THREE.Vector3(0,0,0));  
+            var n=  r.multiplyVector3(new THREE.Vector3(0,0,1))
+            console.log("normal: "+Math.round(n.x)+","+Math.round(n.y)+','+Math.round(n.z));
+            //intersects[ 0 ].object.material.color.setHex( Math.random() * 0xffffff );
+        }
+
+      
+      }
+
+
+
 </script>
