@@ -5,7 +5,7 @@
 </body>    
 
 <script>
-
+    var mouseDownAt;
     var camera, scene, renderer,
     geometry, material, mesh;
             var matrix = new THREE.Matrix4();
@@ -23,7 +23,7 @@
       this.all_meshes = new THREE.Object3D();
 
       this.prepare_mesh = function(geometry, color, orientation, meshes_array){
-        var mesh = new THREE.Mesh(geometry, Cubie.prototype.materials[color].clone());
+        var mesh = new THREE.Mesh(geometry, Cubie.prototype.materials[color]);
         var mesh_matrix = new THREE.Matrix4();
         if (orientation != undefined){
           mesh_matrix.setRotationFromEuler(orientation);
@@ -162,6 +162,7 @@
         layer = this.getLayer(axis, position);
         for (i=0; i < layer.length; i++){
           layer[i].all_meshes.applyMatrix(m);
+          layer[i].all_meshes.updateMatrix();
         }
       }
 
@@ -273,6 +274,9 @@
 
         document.body.appendChild( renderer.domElement );
         document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+        document.addEventListener( 'mouseup', onDocumentMouseUp, false );
+
+
         window.addEventListener( 'resize', onWindowResize, false );
 
 
@@ -287,8 +291,8 @@
     }
 
     function render() {
-     //  cube.applyMatrix(matrix);
-       //cube.rotateLayer('y',1,0.01)
+       //cube.applyMatrix(matrix);
+      // cube.rotateLayer('y',1,0.01)
        // cube.rotateLayer('y',0,0.01)
 
        scene.updateMatrix();
@@ -309,6 +313,7 @@
 
         event.preventDefault();
 
+        mouseDownAt = new THREE.Vector2(( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1);
         var vector = new THREE.Vector3( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1, 0.5 );
 
         projector.unprojectVector( vector, camera );
@@ -319,18 +324,82 @@
 
         if ( intersects.length > 0 ) {
             console.log("---")
-            o = intersects[0].object.parent.matrix.getPosition();
+            cube.clickedPosition = intersects[0].object.parent.matrix.getPosition().clone();
             var r = intersects[0].object.matrixWorld.clone()
             r.setPosition(new THREE.Vector3(0,0,0));  
-            var n=  r.multiplyVector3(new THREE.Vector3(0,0,1))
-            console.log("normal: "+Math.round(n.x)+","+Math.round(n.y)+','+Math.round(n.z));
-            console.log("position: "+Math.round(o.x)+","+Math.round(o.y)+','+Math.round(o.z));
+            cube.clickedOrientation =  r.multiplyVector3(new THREE.Vector3(0,0,1)).clone();
+            console.log("normal: "+Math.round(cube.clickedOrientation.x)+","+Math.round(cube.clickedOrientation.y)+','+Math.round(cube.clickedOrientation.z));
+ 
 
             //intersects[ 0 ].object.material.color.setHex( Math.random() * 0xffffff );
         }
 
       
       }
+
+    function onDocumentMouseUp( event){
+        event.preventDefault();
+        mouseUpAt = new THREE.Vector2(( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1)
+        directionVector =  mouseUpAt.sub(mouseDownAt, mouseUpAt).normalize();
+        rotateAngle(directionVector)
+    }
+
+    function rotateAngle(vector){
+      console.log("position: "+Math.round(cube.clickedPosition.x)+","+Math.round(cube.clickedPosition.y)+','+Math.round(cube.clickedPosition.z));
+      if (Math.cos(Math.PI*(1/4)) > vector.x && vector.x >  Math.cos(Math.PI*(3/4))) {
+        if (Math.round(cube.clickedOrientation.x) ==1) {
+          axis = 'z';
+          layer = (cube.clickedPosition.z+2)/2;  
+          if (vector.y > 0) {
+            angle = - Math.PI/2;
+          }
+          else {
+            angle =  Math.PI/2;
+          }
+        }
+        if (Math.round(cube.clickedOrientation.y) ==1) {
+          axis = 'z';
+          layer = (cube.clickedPosition.z+2)/2;  
+        }
+        if (Math.round(cube.clickedOrientation.z) ==1) {
+          layer = (cube.clickedPosition.x+2)/2;  
+          axis = 'x';
+          if (vector.y > 0) {
+            angle =  Math.PI/2;
+          }
+          else {
+            angle = - Math.PI/2;
+          }
+        }
+
+
+      }
+      else {
+        if (Math.round(cube.clickedOrientation.x) ==1) {
+          axis = 'y';
+          layer = (cube.clickedPosition.y+2)/2;  
+        }
+        if (Math.round(cube.clickedOrientation.y) ==1) {
+          axis = 'y';
+          layer = (cube.clickedPosition.y+2)/2;  
+        }
+        if (Math.round(cube.clickedOrientation.z) ==1) {
+          layer = (cube.clickedPosition.y+2)/2;  
+          axis = 'y';
+        }
+
+
+        if (vector.x < 0) {
+          angle = Math.PI/2
+        }
+        else {
+          angle = - Math.PI/2
+        }
+      }
+      console.log("Axis : "+axis+" Angle :"+ angle+" Layer :"+Math.round(layer))
+      cube.rotateLayer(axis,Math.round(layer),angle)
+      return [axis, angle];
+    }
 
 
 
