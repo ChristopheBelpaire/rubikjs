@@ -360,6 +360,12 @@
         if (Math.round(cube.clickedOrientation.y) ==1) {
           axis = 'z';
           layer = (cube.clickedPosition.z+2)/2;  
+          if (vector.y > 0) {
+            angle = - Math.PI/2;
+          }
+          else {
+            angle =  Math.PI/2;
+          }
         }
         if (Math.round(cube.clickedOrientation.z) ==1) {
           layer = (cube.clickedPosition.x+2)/2;  
@@ -378,23 +384,41 @@
         if (Math.round(cube.clickedOrientation.x) ==1) {
           axis = 'y';
           layer = (cube.clickedPosition.y+2)/2;  
+          if (vector.x < 0) {
+            angle = Math.PI/2
+          }
+          else {
+            angle = - Math.PI/2
+          } 
         }
         if (Math.round(cube.clickedOrientation.y) ==1) {
-          axis = 'y';
-          layer = (cube.clickedPosition.y+2)/2;  
+          axis = 'x';
+          layer = (cube.clickedPosition.x+2)/2;  
+          if (vector.x > 0) {
+            angle = - Math.PI/2;
+          }
+          else {
+            angle =  Math.PI/2;
+          }
         }
         if (Math.round(cube.clickedOrientation.z) ==1) {
           layer = (cube.clickedPosition.y+2)/2;  
           axis = 'y';
+          if (vector.x < 0) {
+            angle = Math.PI/2
+          }
+          else {
+            angle = - Math.PI/2
+          } 
         }
 
 
-        if (vector.x < 0) {
+/*        if (vector.x < 0) {
           angle = Math.PI/2
         }
         else {
           angle = - Math.PI/2
-        }
+        } */
       }
       console.log("Axis : "+axis+" Angle :"+ angle+" Layer :"+Math.round(layer))
       cube.rotateLayer(axis,Math.round(layer),angle)
