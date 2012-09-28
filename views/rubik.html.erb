@@ -55,7 +55,8 @@
       if( typeof Cubie.prototype.initialized == "undefined" ) { 
         Cubie.prototype.initialized  = 0;
         Cubie.prototype.mesh_files = [];
-        Cubie.prototype.materials = [new THREE.MeshBasicMaterial( { color: 0x000000, overdraw: true}),
+        Cubie.prototype.materials = [ new THREE.MeshPhongMaterial( { ambient: 0xFFFFFF, color: 0x000000, specular: 0x888888, shininess: 20 } ),
+                                      //new THREE.MeshBasicMaterial( { color: 0x000000, overdraw: true}),
                                      new THREE.MeshBasicMaterial( { color: 0xffffff, overdraw: true}),
                                      new THREE.MeshBasicMaterial( { color: 0xff0000, overdraw: true}),
                                      new THREE.MeshBasicMaterial( { color: 0x00ff00, overdraw: true}),
@@ -255,9 +256,9 @@
         camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 10000 );
 
 
-        var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 ); 
-        directionalLight.position.set( 0, 0, 10 ); 
-        scene.add( directionalLight );
+        pointLight = new THREE.PointLight( 0xffffff );
+        pointLight.position.set( 10, 10, 10 ); 
+        scene.add( pointLight );
     //    camera.matrix.setPosition(new THREE.Vector3(0,0,5));
         camera.position.x = 00;
         camera.position.y = 00;
