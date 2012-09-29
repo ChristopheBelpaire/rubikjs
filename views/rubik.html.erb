@@ -1,10 +1,12 @@
-<script src="/javascripts/three.js/build/Three.js"></script>
+<script src="/javascripts/three.js/build/three.min.js"></script>
 
 <body style ='margin:0;'>
 
 </body>    
 
 <script>
+    var keyboardRotatingAxis = new THREE.Vector3(1,0,0);
+
     var mouseDownAt;
     var mouseButtonDown = false;
     var previousEvent;
@@ -281,6 +283,7 @@
         document.addEventListener( 'mousedown', onDocumentMouseDown, false );
         document.addEventListener( 'mouseup', onDocumentMouseUp, false );
         document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+        document.addEventListener( 'keydown', onDocumentKeyDown, false );
 
 
         window.addEventListener( 'resize', onWindowResize, false );
@@ -475,30 +478,73 @@
       }
       switch (threeDimensionsAxisesPosition){
         case 0:
-         // console.log("LEFT");
+          console.log("LEFT");
           return ['x', Math.PI/2];
           break;
         case 1:
-         // console.log("RIGHT");
+          console.log("RIGHT");
           return ['x', -Math.PI/2];
           break;
         case 2:
-         // console.log("UP");
+          console.log("UP");
           return ['y', Math.PI/2];
           break;  
         case 3:
-         // console.log("DOWN");
+          console.log("DOWN");
           return ['y', -Math.PI/2];
           break;  
         case 4:
-         // console.log("FRONT");
+          console.log("FRONT");
           return ['z', Math.PI/2];
           break;
         case 5:
-         // console.log("BACK");
+          console.log("BACK");
           return ['z', -Math.PI/2];
           break;    
       }                            
     }
+
+    function keyboardRotate(direction,layer){
+      r = getRotate(direction);
+      if(r[1] < 0){
+        layer = cube.size-1 - layer;
+      }
+      cube.rotateLayer(r[0],layer,r[1]);
+    }
+
+    function onDocumentKeyDown(event){
+     // keyboardRotatingAxis = 
+      console.log(event);
+      switch(event.keyCode){
+        case 65:
+          keyboardRotate(keyboardRotatingAxis.clone().negate(),2);
+          break;
+        case 90:
+          keyboardRotate(keyboardRotatingAxis.clone().negate(),1);
+          break;
+        case 69:
+          keyboardRotate(keyboardRotatingAxis.clone().negate(),0);
+          break; 
+        case 81:
+          keyboardRotate(keyboardRotatingAxis,0);
+          break; 
+        case 83:
+          keyboardRotate(keyboardRotatingAxis,1);
+          break;                                 
+        case 68:
+          keyboardRotate(keyboardRotatingAxis,2);
+          break;
+        case 66:
+          keyboardRotatingAxis = new THREE.Vector3(1,0,0);
+          break;
+        case 72:
+          keyboardRotatingAxis = new THREE.Vector3(0,1,0);
+          break;
+        case 85:
+          keyboardRotatingAxis = new THREE.Vector3(0,0,1);
+          break;             
+      }
+    }
+
 
 </script>
