@@ -5,6 +5,8 @@
 </body>    
 
 <script>
+    var keyboardRotatingAxis = new THREE.Vector3(1,0,0);
+
     var mouseDownAt;
     var mouseButtonDown = false;
     var previousEvent;
@@ -94,9 +96,15 @@
     };
 
     function Cube(scene,size){
+      this.moves = [];
+      this.currentMovePosition = 0;
+      this.currentMove = undefined;
       this.cubies_meshes = [];
       this.objects = new THREE.Object3D();
       this.scene = scene;
+      this.rotationSteps = 20;
+      this.currentRotationStep =0;
+
       this.init_center = function (orientation, color){
 
         center_x = -this.max_position +2;
@@ -148,22 +156,39 @@
       } 
 
       this.rotateLayer = function(axis,position, angle){
-        var m = new THREE.Matrix4();
-        switch(axis){
-          case 'x':
-            m.setRotationFromEuler(new THREE.Vector3(angle,0,0));
-            break;
-          case 'y':
-            m.setRotationFromEuler(new THREE.Vector3(0,angle,0));
-            break;          
-          case 'z':
-            m.setRotationFromEuler(new THREE.Vector3(0,0,angle));
-            break;          
-        };    
-        layer = this.getLayer(axis, position);
-        for (i=0; i < layer.length; i++){
-          layer[i].objects.applyMatrix(m);
+        this.moves.push({axis: axis, position: position, angle: angle })
+      }
+
+      this.animateLayerRotation = function(){
+        if (this.currentRotationStep >0 ){
+          for (i=0; i < this.currentRotatingLayer.length; i++){
+              this.currentRotatingLayer[i].objects.applyMatrix(this.currentMove.rotationMatrix);
+          } 
+          this.currentRotationStep--;
+         // console.log(this.currentRotationStep);
+
         }
+        else {
+          if(this.moves.length > this.currentMovePosition){
+            this.currentMove = this.moves[this.currentMovePosition];
+            this.currentMovePosition++;
+            this.currentRotationStep = this.rotationSteps;
+            this.currentRotatingLayer = this.getLayer(this.currentMove.axis, this.currentMove.position);
+            this.currentMove.rotationMatrix= new THREE.Matrix4();
+            switch(this.currentMove.axis){
+              case 'x':
+                this.currentMove.rotationMatrix.setRotationFromEuler(new THREE.Vector3(this.currentMove.angle/this.rotationSteps,0,0));
+              break;
+              case 'y':
+                this.currentMove.rotationMatrix.setRotationFromEuler(new THREE.Vector3(0,this.currentMove.angle/this.rotationSteps,0));
+              break;          
+              case 'z':
+                this.currentMove.rotationMatrix.setRotationFromEuler(new THREE.Vector3(0,0,this.currentMove.angle/this.rotationSteps));
+              break;          
+            };    
+          }
+        }
+
       }
 
       this.size = size;
@@ -281,6 +306,7 @@
         document.addEventListener( 'mousedown', onDocumentMouseDown, false );
         document.addEventListener( 'mouseup', onDocumentMouseUp, false );
         document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+        document.addEventListener( 'keydown', onDocumentKeyDown, false );
 
 
         window.addEventListener( 'resize', onWindowResize, false );
@@ -291,6 +317,7 @@
     function animate() {
 
         // note: three.js includes requestAnimationFrame shim
+        cube.animateLayerRotation();
         requestAnimationFrame( animate );
         render();
 
@@ -299,6 +326,7 @@
     function render() {
        scene.updateMatrix();
        renderer.render( scene, camera );
+
     }
 
 
@@ -312,8 +340,9 @@
     }
 
     function onDocumentMouseMove( event){
+      event.preventDefault();
+
       if(mouseButtonDown == true){
-        event.preventDefault();
         if (previousEvent != undefined){
             var matrix = new THREE.Matrix4();
             var rotationAngle = new THREE.Vector3((event.y - previousEvent.y) /200, (event.x - previousEvent.x)/200, 0);
@@ -475,30 +504,72 @@
       }
       switch (threeDimensionsAxisesPosition){
         case 0:
-         // console.log("LEFT");
+        //  console.log("LEFT");
           return ['x', Math.PI/2];
           break;
         case 1:
-         // console.log("RIGHT");
+        //  console.log("RIGHT");
           return ['x', -Math.PI/2];
           break;
         case 2:
-         // console.log("UP");
+        //  console.log("UP");
           return ['y', Math.PI/2];
           break;  
         case 3:
-         // console.log("DOWN");
+        //  console.log("DOWN");
           return ['y', -Math.PI/2];
           break;  
         case 4:
-         // console.log("FRONT");
+        //  console.log("FRONT");
           return ['z', Math.PI/2];
           break;
         case 5:
-         // console.log("BACK");
+        //  console.log("BACK");
           return ['z', -Math.PI/2];
           break;    
       }                            
     }
+
+    function keyboardRotate(direction,layer){
+      r = getRotate(direction);
+      if(r[1] < 0){
+        layer = cube.size-1 - layer;
+      }
+      cube.rotateLayer(r[0],layer,r[1]);
+    }
+
+    function onDocumentKeyDown(event){
+      event.preventDefault();
+      switch(event.keyCode){
+        case 65:
+          keyboardRotate(keyboardRotatingAxis.clone().negate(),2);
+          break;
+        case 90:
+          keyboardRotate(keyboardRotatingAxis.clone().negate(),1);
+          break;
+        case 69:
+          keyboardRotate(keyboardRotatingAxis.clone().negate(),0);
+          break; 
+        case 81:
+          keyboardRotate(keyboardRotatingAxis,0);
+          break; 
+        case 83:
+          keyboardRotate(keyboardRotatingAxis,1);
+          break;                                 
+        case 68:
+          keyboardRotate(keyboardRotatingAxis,2);
+          break;
+        case 66:
+          keyboardRotatingAxis = new THREE.Vector3(1,0,0);
+          break;
+        case 72:
+          keyboardRotatingAxis = new THREE.Vector3(0,1,0);
+          break;
+        case 85:
+          keyboardRotatingAxis = new THREE.Vector3(0,0,1);
+          break;             
+      }
+    }
+
 
 </script>
