@@ -343,9 +343,13 @@
       event.preventDefault();
 
       if(mouseButtonDown == true){
+      //  console.log("current x: "+event.x,' y:'+event.y);
+
         if (previousEvent != undefined){
+        //          console.log("previous x: "+previousEvent.x,' y:'+previousEvent.y);
+
             var matrix = new THREE.Matrix4();
-            var rotationAngle = new THREE.Vector3((event.y - previousEvent.y) /200, (event.x - previousEvent.x)/200, 0);
+            var rotationAngle = new THREE.Vector3((event.clientY - previousEvent.clientY) /200, (event.clientX - previousEvent.clientX)/200, 0);
             matrix.setRotationFromEuler(rotationAngle);
             cube.applyMatrix(matrix);
         }
