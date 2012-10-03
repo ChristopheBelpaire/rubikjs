@@ -16,6 +16,18 @@
     init();
     animate();
  
+    THREE.Vector3.prototype.equals = function(v){
+      if(Math.round(this.x)!= Math.round(v.x)){ 
+        return false;
+      }
+      if(Math.round(this.y)!= Math.round(v.y)){ 
+        return false;
+      }
+      if(Math.round(this.z)!= Math.round(v.z)){ 
+        return false;
+      }
+      return true;
+    } 
     function Cubie(cube, type, orientation, position, color_front, color_up, color_side, post_rotation_matrix, meshes_array){
       this.objects = new THREE.Object3D();
 
@@ -32,18 +44,23 @@
         }
         mesh.cubie = this;
         mesh.color = color;
+        return mesh;
       }  
 
       this.load_mesh = function (type, color, orientation, meshes_array ){
+        var mesh;
         if (Cubie.prototype.mesh_files[type] == undefined) {
             loader.load(Cubie.prototype.mesh_filenames[type], function(geometry){
             Cubie.prototype.mesh_files[type] = geometry;
-            scope.prepare_mesh(geometry, color, orientation, meshes_array);
+            mesh = scope.prepare_mesh(geometry, color, orientation, meshes_array);
+            if (type == Cubie.STICKER) {this.cube.stickersByColors[color].push(mesh);}
           });
         }
        else{
-         scope.prepare_mesh(geometry, color, orientation, meshes_array);
-       }   
+         mesh =scope.prepare_mesh(geometry, color, orientation, meshes_array);
+         if (type == Cubie.STICKER) {this.cube.stickersByColors[color].push(mesh);}
+       }
+       return mesh;   
       }
 
       this.applyMatrix = function applyMatrix(matrix){
@@ -57,19 +74,21 @@
       if( typeof Cubie.prototype.initialized == "undefined" ) { 
         Cubie.prototype.initialized  = 0;
         Cubie.prototype.mesh_files = [];
-        Cubie.prototype.materials = [ new THREE.MeshPhongMaterial( { ambient: 0xFFFFFF, color: 0x000000, specular: 0x888888, shininess: 20 } ),
+        Cubie.prototype.materials = [
                                       //new THREE.MeshBasicMaterial( { color: 0x000000, overdraw: true}),
                                      new THREE.MeshBasicMaterial( { color: 0xffffff, overdraw: true}),
                                      new THREE.MeshBasicMaterial( { color: 0xff0000, overdraw: true}),
                                      new THREE.MeshBasicMaterial( { color: 0x00ff00, overdraw: true}),
                                      new THREE.MeshBasicMaterial( { color: 0x0000ff, overdraw: true}),
                                      new THREE.MeshBasicMaterial( { color: 0xffff00, overdraw: true}),
-                                     new THREE.MeshBasicMaterial( { color: 0xffa500, overdraw: true})]
+                                     new THREE.MeshBasicMaterial( { color: 0xffa500, overdraw: true}),
+                                     new THREE.MeshPhongMaterial( { ambient: 0xFFFFFF, color: 0x000000, specular: 0x888888, shininess: 20 } )]
         Cubie.prototype.mesh_filenames = ['rubik_corner.js','rubik_edge.js','rubik_side.js','sticker.js'];
         Cubie.prototype.initialized = true;
       }; 
 
       var scope = this;
+      this.cube = cube;
       this.rotationMatrix = new THREE.Matrix4();
       this.matrix = new THREE.Matrix4();
       this.matrix.setRotationFromEuler(orientation);
@@ -104,7 +123,7 @@
       this.scene = scene;
       this.rotationSteps = 20;
       this.currentRotationStep =0;
-
+      this.stickersByColors = [[],[],[],[],[],[]];
       this.init_center = function (orientation, color){
 
         center_x = -this.max_position +2;
@@ -190,6 +209,32 @@
         }
 
       }
+/*
+      this.isSolved =function(){
+        var goToOriginMatrix =  cube.cubies[1].objects.matrix.clone();
+        goToOriginMatrix.setPosition(new THREE.Vector3(0,0,0));
+        for(i=0; i < this.cubies.length; i++){
+          var compareMatrix = new THREE.Matrix4();
+          if (!compareMatrix.multiply(this.cubies[i].originalMatrix, goToOriginMatrix).equals(this.cubies[i].objects.matrix)) return false;
+        }
+        return true;
+      } 
+*/
+      this.isSolved = function(){
+        for (var c = 0; c < cube.stickersByColors.length; c++){
+          var colorStickers = cube.stickersByColors[c];
+          var firstStickerOrientation = colorStickers[0].matrixWorld.getColumnZ().clone();
+          for (var s = 0; s < colorStickers.length; s++){
+            var sticker = colorStickers[s];
+            stickerOrientation = colorStickers[s].matrixWorld.getColumnZ();
+            if (!firstStickerOrientation.equals(stickerOrientation)) {
+              return false;
+            }  
+          };
+        };
+        return true;
+      }
+
 
       this.size = size;
       this.globalRotationAngle = new THREE.Vector3(0,0,0);
@@ -264,13 +309,13 @@
         Cubie.SIDE= 2;
         Cubie.STICKER = 3;
 
-        Cubie.BLACK = 0;
-        Cubie.WHITE = 1;
-        Cubie.RED =   2;
-        Cubie.GREEN = 3;
-        Cubie.BLUE =  4;
-        Cubie.YELLOW =5;
-        Cubie.ORANGE =6; 
+        Cubie.WHITE = 0;
+        Cubie.RED =   1;
+        Cubie.GREEN = 2;
+        Cubie.BLUE =  3;
+        Cubie.YELLOW =4;
+        Cubie.ORANGE =5; 
+        Cubie.BLACK = 6;
 
 
 
