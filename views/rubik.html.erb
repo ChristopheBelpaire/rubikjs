@@ -235,7 +235,18 @@
         return true;
       }
 
+     this.scramble = function(moves){
+        var axises = ['x','y','z'];
 
+        var angles =[Math.PI/2, -Math.PI/2];
+        for(var m = 0; m < moves; m++ ){
+          axis = axises[Math.floor((Math.random()*3))];
+          angle = angles[Math.floor((Math.random()*2))];
+          layer = Math.floor((Math.random()*this.size))
+          console.log(axis,' ',angle);
+          this.rotateLayer(axis, layer ,angle);
+        }
+      }
       this.size = size;
       this.globalRotationAngle = new THREE.Vector3(0,0,0);
       this.cubies = new Array();
